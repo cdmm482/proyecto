@@ -17,7 +17,6 @@ import (
 	"github.com/joho/godotenv"
 )
 
-// Blockchain is a series of validated Blocks
 type Block struct {
 	Index     int
 	Timestamp string
@@ -29,7 +28,6 @@ type Block struct {
 
 var Blockchain []Block
 
-// Message takes incoming JSON payload for writing heart rate
 type Message struct {
 	BPM  int
 	Name string
@@ -65,7 +63,7 @@ func run() error {
 	httpPort := os.Getenv("PORT")
 	log.Println("HTTP Server Listening on port :", httpPort)
 	s := &http.Server{
-		Addr:           "192.168.1.3:" + httpPort,
+		Addr:           "192.168.1.3:" + httpPort, // Debe ser IP del mismo PC, el puerto esta por defecto en 80, lo puedes cambiar en .env
 		Handler:        mux,
 		ReadTimeout:    10 * time.Second,
 		WriteTimeout:   10 * time.Second,
@@ -84,7 +82,7 @@ func makeMuxRouter() http.Handler {
 	muxRouter := mux.NewRouter()
 	muxRouter.HandleFunc("/", handleGetBlockchain).Methods("GET")
 	muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
-	// muxRouter.HandleFunc("/", handleUpdateBlock).Methods("PUT")
+	// muxRouter.HandleFunc("/", handleUpdateBlock).Methods("PUT") // Hecho solo para pruebas
 	return muxRouter
 }
 
@@ -123,6 +121,7 @@ func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
 	respondWithJSON(w, r, http.StatusCreated, newBlock)
 
 }
+
 // func handleUpdateBlock(w http.ResponseWriter, r *http.Request) {
 // 	w.Header().Set("Content-Type", "application/json")
 // 	var msg Message
