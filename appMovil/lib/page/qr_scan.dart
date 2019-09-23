@@ -55,6 +55,9 @@ class QrScanState extends State<QrScan> {
     try {
       String barcode = await BarcodeScanner.scan();
       setState(() => this._barcode = barcode);
+      if(barcode=='da'){
+        this._barcode='hola';
+      }
       print(barcode);
     } on PlatformException catch (e) {
       if (e.code == BarcodeScanner.CameraAccessDenied) {
