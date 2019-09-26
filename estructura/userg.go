@@ -1,5 +1,6 @@
 package estructura
 
+// Userg es una estructura de cualquier usuario que puede ser medico o paciente
 type Userg struct {
 	FirstName string `form:"firstname,omitempty" json:"firstname,omitempty" bson:"firstname,omitempty"`
 	LastName  string `form:"lastname,omitempty" json:"lastname,omitempty" bson:"lastname,omitempty"`

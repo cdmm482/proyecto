@@ -1,5 +1,6 @@
 package estructura
 
+// Patient es una estructura del paciente que contiene una estructura usuario
 type Patient struct {
 	Index    int    `form:"index,omitempty" json:"index,omitempty" bson:"index,omitempty"`
 	Code     string `form:"code,omitempty" json:"code,omitempty" bson:"code,omitempty"`

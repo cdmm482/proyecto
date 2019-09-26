@@ -2,6 +2,7 @@ package estructura
 
 import "time"
 
+// History es una estructura para guardar los datos de consulta por paciente
 type History struct {
 	Index    int       `form:"index,omitempty" json:"index,omitempty" bson:"index,omitempty"`
 	Patien   Patient   `form:"patien,omitempty" json:"patien,omitempty" bson:"patien,omitempty"`
