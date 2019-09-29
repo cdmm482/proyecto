@@ -17,7 +17,6 @@ import (
 
 // UpDate makes an update of the firebase
 func UpDate() {
-	var veces int = 2
 	ctx := context.Background()
 	// serviceKey.json son las credenciales de la base de datos FB
 	sa := option.WithCredentialsFile("fbconection/serviceKey.json")
@@ -37,9 +36,9 @@ func UpDate() {
 	//
 
 	defer client.Close()
-	for i := 1; i <= veces; {
+	for i := 1; i <= 3; {
 		// tiempo dormido en segundos
-		time.Sleep(30 * time.Second)
+		time.Sleep(5 * time.Second)
 		// Texto a sobreescribir en formato JSON
 		Lobby := map[string]interface{}{
 			"CI":    "null",
@@ -54,7 +53,12 @@ func UpDate() {
 		// La variable contenido es el id del documento
 		contenido := string(bytesLeidos)
 		_, err = client.Collection("Consulta").Doc(contenido).Set(ctx, Lobby, firestore.MergeAll)
-		fmt.Println(err)
+		if err != nil {
+			fmt.Println(err)
+		}
+		//  else {
+		// 	fmt.Println("Llave cambiada")
+		// }
 	}
 }
 

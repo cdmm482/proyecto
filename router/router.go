@@ -1,14 +1,16 @@
 package router
 
 import (
-	"crypto/sha256"
-	"encoding/hex"
 	"encoding/json"
 	"io"
 	"log"
 	"net/http"
 	"os"
-	"strconv"
+	"proyecto/blocks/blockhisto"
+	"proyecto/blocks/blockmedic"
+	"proyecto/blocks/blockpatient"
+	"proyecto/controller"
+	"proyecto/estructura"
 	"sync"
 	"time"
 
@@ -17,49 +19,81 @@ import (
 	"github.com/joho/godotenv"
 )
 
-type Block struct {
-	Index     int
-	Timestamp string
-	BPM       int
-	Name      string
-	Hash      string
-	PrevHash  string
+// Medicos cadena de bloques de medicos
+var Medicos []estructura.Medic
+
+// Pacientes cadena de bloques de pacientes
+var Pacientes []estructura.Patient
+
+// Historia cadena de bloques del historial medico general
+var Historia []estructura.History
+
+// MsgUser estructura que obtiene valores de datos en un POST de un medico y/o medico
+type MsgUser struct {
+	Code      string
+	FirstName string
+	LastName  string
+	CI        string
+	Age       int
 }
 
-var Blockchain []Block
-var Histo []Block
+// MsgHis estructura que obtiene valores de datos en un POST de un historial
+type MsgHis struct {
+	CodePat string
+	CodeMed string
+}
 
-type Message struct {
-	BPM  int
-	Name string
+// HisMessage estructura que obtiene valores de datos en un POST de historial
+type HisMessage struct {
+	Paciente estructura.Patient
+	Medico   estructura.Medic
 }
 
 var mutex = &sync.Mutex{}
 
-func NewRoute() error {
+// NewRoute makes a new route
+func NewRoute() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Fatal(err)
 	}
-
+	UserDefault := estructura.Userg{}
+	UserDefault = estructura.Userg{"Imhotep", "el que viene en paz", " 26902610LP", 4000}
 	go func() {
 		t := time.Now()
-		genesisBlock := Block{}
-		genesisBlock = Block{0, t.String(), 1, "genesis", calculateHash(genesisBlock), calculateHash(genesisBlock)}
-		spew.Dump(genesisBlock)
+		// genesisBlock := Block{}
+		// genesisBlock = Block{0, t.String(), 1, "genesis", calculatHash(genesisBlock), calculatHash(genesisBlock)}
+		// spew.Dump(genesisBlock)
+
+		genPac := estructura.Patient{}
+		genPac = estructura.Patient{0, "123456789", UserDefault, controller.CalculateHashPac(genPac), "genesis"}
+
+		UserDefault.CI = "123321456CBB" // Para hacer controles de que un paciente no puede ser su propio medico
+
+		genMed := estructura.Medic{}
+		genMed = estructura.Medic{0, "233234423", UserDefault, t, controller.CalculateHashMed(genMed), "genesis"}
+
+		genHist := estructura.History{}
+		genHist = estructura.History{0, genPac, genMed, t, controller.CalculateHashHis(genHist), "genesis"}
 
 		mutex.Lock()
-		Blockchain = append(Blockchain, genesisBlock)
+
+		// Blockchain = append(Blockchain, genesisBlock)
+		Medicos = append(Medicos, genMed)
+		Pacientes = append(Pacientes, genPac)
+		Historia = append(Historia, genHist)
+
 		mutex.Unlock()
 	}()
 	log.Fatal(run())
-	return err
+
 }
 
 // web server
 func run() error {
 	mux := makeMuxRouter()
 	httpPort := os.Getenv("PORT")
+
 	log.Println("HTTP Server Listening on port :", httpPort)
 	s := &http.Server{
 		Addr:           "localhost:" + httpPort, // Debe ser IP del mismo PC, el puerto esta por defecto en 80, lo puedes cambiar en .env
@@ -68,37 +102,34 @@ func run() error {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
-
-	if err := s.ListenAndServe(); err != nil {
-		return err
-	}
-
-	return nil
+	err := s.ListenAndServe()
+	return err
 }
 
 // create handlers
 func makeMuxRouter() http.Handler {
+
 	muxRouter := mux.NewRouter()
-	muxRouter.HandleFunc("/history", handleGetBlockchain).Methods("GET")
-	muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
+	// muxRouter.HandleFunc("/history", handleGetBlockchain).Methods("GET")
+	// muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
+
+	muxRouter.HandleFunc("/medic", handleWriteMedic).Methods("POST")
+	muxRouter.HandleFunc("/medic", handleGetMedics).Methods("GET")
+
+	muxRouter.HandleFunc("/patient", handleWritePat).Methods("POST")
+	muxRouter.HandleFunc("/patient", handleGetPatients).Methods("GET")
+
+	muxRouter.HandleFunc("/history", handleWriteHisto).Methods("POST")
+	muxRouter.HandleFunc("/history", handleGetHistories).Methods("GET")
+
 	// muxRouter.HandleFunc("/", handleUpdateBlock).Methods("PUT") // Hecho solo para pruebas
 	return muxRouter
 }
 
-// write blockchain when we receive an http request
-func handleGetBlockchain(w http.ResponseWriter, r *http.Request) {
-	bytes, err := json.MarshalIndent(Blockchain, "", "  ")
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-		return
-	}
-	io.WriteString(w, string(bytes))
-}
-
-// takes JSON payload as an input for heart rate (BPM)
-func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
+// POSTS  - -- - - - -- - - - - - - -  - - - - - -  - - - -  - -
+func handleWriteMedic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var msg Message
+	var msg MsgUser
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&msg); err != nil {
@@ -108,12 +139,57 @@ func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
 	defer r.Body.Close()
 
 	mutex.Lock()
-	prevBlock := Blockchain[len(Blockchain)-1]
-	newBlock := generateBlock(prevBlock, msg.BPM, msg.Name)
-	// comp := isBlockValid(newBlock, prevBlock)
-	if isBlockValid(newBlock, prevBlock) {
-		Blockchain = append(Blockchain, newBlock)
-		spew.Dump(Blockchain)
+	prevBlock := Medicos[len(Medicos)-1]
+	newBlock := blockmedic.GenerateBlockmedic(prevBlock, msg.Code, msg.FirstName, msg.LastName, msg.CI, msg.Age)
+	if controller.IsMedicValid(newBlock, prevBlock) {
+		Medicos = append(Medicos, newBlock)
+		spew.Dump(Medicos)
+	}
+	mutex.Unlock()
+
+	respondWithJSON(w, r, http.StatusCreated, newBlock)
+
+}
+func handleWritePat(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	var msg MsgUser
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&msg); err != nil {
+		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
+		return
+	}
+	defer r.Body.Close()
+
+	mutex.Lock()
+	prevBlock := Pacientes[len(Pacientes)-1]
+	newBlock := blockpatient.GenerateBlockPatient(prevBlock, msg.Code, msg.FirstName, msg.LastName, msg.CI, msg.Age)
+	if controller.IsPatientValid(newBlock, prevBlock) {
+		Pacientes = append(Pacientes, newBlock)
+		spew.Dump(Pacientes)
+	}
+	mutex.Unlock()
+
+	respondWithJSON(w, r, http.StatusCreated, newBlock)
+
+}
+func handleWriteHisto(w http.ResponseWriter, r *http.Request) { //
+	w.Header().Set("Content-Type", "application/json")
+	var msg MsgHis
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&msg); err != nil {
+		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
+		return
+	}
+	defer r.Body.Close()
+
+	mutex.Lock()
+	prevBlock := Historia[len(Historia)-1]
+	newBlock := blockhisto.GenerateBlockHisto(prevBlock, msg.CodeMed, msg.CodePat, Medicos, Pacientes)
+	if controller.IsHistoryValid(newBlock, prevBlock) {
+		Historia = append(Historia, newBlock)
+		spew.Dump(Historia)
 	}
 	mutex.Unlock()
 
@@ -121,6 +197,35 @@ func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
 
 }
 
+// GETTERS - - - - - - - - - - - - -  - - - - - -  - - - - -  --
+func handleGetMedics(w http.ResponseWriter, r *http.Request) {
+	bytes, err := json.MarshalIndent(Medicos, "", "  ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	io.WriteString(w, string(bytes))
+}
+
+func handleGetPatients(w http.ResponseWriter, r *http.Request) {
+	bytes, err := json.MarshalIndent(Pacientes, "", "  ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	io.WriteString(w, string(bytes))
+}
+
+func handleGetHistories(w http.ResponseWriter, r *http.Request) {
+	bytes, err := json.MarshalIndent(Historia, "", "  ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	io.WriteString(w, string(bytes))
+}
+
+//
 func respondWithJSON(w http.ResponseWriter, r *http.Request, code int, payload interface{}) {
 	response, err := json.MarshalIndent(payload, "", "  ")
 	if err != nil {
@@ -132,43 +237,95 @@ func respondWithJSON(w http.ResponseWriter, r *http.Request, code int, payload i
 	w.Write(response)
 }
 
-// make sure block is valid by checking index, and comparing the hash of the previous block
-func isBlockValid(newBlock, oldBlock Block) bool {
-	if oldBlock.Index+1 != newBlock.Index {
-		return false
-	}
+// // Block asfvesegfdfgwesrg
+// type Block struct {
+// 	Index     int
+// 	Timestamp string
+// 	BPM       int
+// 	Name      string
+// 	Hash      string
+// 	PrevHash  string
+// }
+// // Blockchain asdfewfksjdfpaosefmpsekmdfasmlkf
+// var Blockchain []Block
 
-	if oldBlock.Hash != newBlock.PrevHash {
-		return false
-	}
+// // Message asdwfqwsaf qwsdc wef qwsfdc sd
+// type Message struct {
+// 	BPM  int
+// 	Name string
+// }
 
-	if calculateHash(newBlock) != newBlock.Hash {
-		return false
-	}
+// // // create a new block using previous block's hash
+// func generateBlock(oldBlock Block, BPM int, Name string) Block {
+// 	var newBlock Block
+// 	t := time.Now()
+// 	newBlock.Index = oldBlock.Index + 1
+// 	newBlock.Timestamp = t.String()
+// 	newBlock.BPM = BPM
+// 	newBlock.Name = Name
+// 	newBlock.PrevHash = oldBlock.Hash
+// 	newBlock.Hash = calculatHash(newBlock)
 
-	return true
-}
+// 	return newBlock
+// }
+// // SHA256 hasing
+// func calculatHash(block Block) string {
+// 	// dao.Company := c
+// 	record := strconv.Itoa(block.Index) + block.Timestamp + strconv.Itoa(block.BPM) + block.Name + block.PrevHash
+// 	h := sha256.New()
+// 	h.Write([]byte(record))
+// 	hashed := h.Sum(nil)
+// 	return hex.EncodeToString(hashed)
+// }
 
-// SHA256 hasing
-func calculateHash(block Block) string {
-	// dao.Company := c
-	record := strconv.Itoa(block.Index) + block.Timestamp + strconv.Itoa(block.BPM) + block.Name + block.PrevHash
-	h := sha256.New()
-	h.Write([]byte(record))
-	hashed := h.Sum(nil)
-	return hex.EncodeToString(hashed)
-}
+// // make sure block is valid by checking index, and comparing the hash of the previous block
+// func isBlockValid(newBlock, oldBlock Block) bool {
+// 	if oldBlock.Index+1 != newBlock.Index {
+// 		return false
+// 	}
 
-// create a new block using previous block's hash
-func generateBlock(oldBlock Block, BPM int, Name string) Block {
-	var newBlock Block
-	t := time.Now()
-	newBlock.Index = oldBlock.Index + 1
-	newBlock.Timestamp = t.String()
-	newBlock.BPM = BPM
-	newBlock.Name = Name
-	newBlock.PrevHash = oldBlock.Hash
-	newBlock.Hash = calculateHash(newBlock)
+// 	if oldBlock.Hash != newBlock.PrevHash {
+// 		return false
+// 	}
 
-	return newBlock
-}
+// 	if calculatHash(newBlock) != newBlock.Hash {
+// 		return false
+// 	}
+
+// 	return true
+// }
+// // write blockchain when we receive an http request
+// func handleGetBlockchain(w http.ResponseWriter, r *http.Request) {
+// 	bytes, err := json.MarshalIndent(Blockchain, "", "  ")
+// 	if err != nil {
+// 		http.Error(w, err.Error(), http.StatusInternalServerError)
+// 		return
+// 	}
+// 	io.WriteString(w, string(bytes))
+// }
+
+// // takes JSON payload as an input for heart rate (BPM)
+// func handleWriteBlock(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Set("Content-Type", "application/json")
+// 	var msg Message
+
+// 	decoder := json.NewDecoder(r.Body)
+// 	if err := decoder.Decode(&msg); err != nil {
+// 		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
+// 		return
+// 	}
+// 	defer r.Body.Close()
+
+// 	mutex.Lock()
+// 	prevBlock := Blockchain[len(Blockchain)-1]
+// 	newBlock := generateBlock(prevBlock, msg.BPM, msg.Name)
+// 	// comp := isBlockValid(newBlock, prevBlock)
+// 	if isBlockValid(newBlock, prevBlock) {
+// 		Blockchain = append(Blockchain, newBlock)
+// 		spew.Dump(Blockchain)
+// 	}
+// 	mutex.Unlock()
+
+// 	respondWithJSON(w, r, http.StatusCreated, newBlock)
+
+// }
