@@ -20,6 +20,9 @@ func IsMedicValid(newBlock estructura.Medic, oldBlock estructura.Medic) bool {
 	if CalculateHashMed(newBlock) != newBlock.Hash {
 		return false
 	}
+	if newBlock.Code == oldBlock.Code {
+		return false
+	}
 
 	return true
 }
@@ -37,7 +40,9 @@ func IsPatientValid(newBlock estructura.Patient, oldBlock estructura.Patient) bo
 	// if calculateHash(newBlock) != newBlock.Hash {
 	// 	return false
 	// }
-
+	if newBlock.Code == oldBlock.Code {
+		return false
+	}
 	return true
 }
 
@@ -99,5 +104,51 @@ func FindUser(codP string, codM string, Medicos []estructura.Medic, Pacientes []
 			findP = Pacientes[i]
 		}
 	}
+
 	return findP, findM
+}
+
+// FindUserByCI encuentra al medico y paciente segun el codigo
+func FindUserByCI(ci string, Usuarios []estructura.Userg) estructura.Userg {
+	findP := estructura.Userg{}
+	for i := 0; i < len(Usuarios); i++ {
+		if ci == Usuarios[i].CI {
+			findP = Usuarios[i]
+		}
+	}
+	return findP
+}
+
+// NotExistsCI es para verificar si existe ya ese carnet
+func NotExistsCI(Usuarios []estructura.Userg, ci string) bool {
+	for i := 0; i < len(Usuarios); i++ {
+		if ci == Usuarios[i].CI {
+			return false
+		}
+	}
+	return true
+}
+
+// ExistsGuys es para ver si existen el paciente y el medico
+func ExistsGuys(Pacientes []estructura.Patient, Medicos []estructura.Medic, codP string, codM string) bool {
+	trueP, trueM := false, false
+	for i := 0; i < len(Medicos); i++ {
+		if codM == Medicos[i].Code {
+			trueM = true
+		}
+	}
+	for i := 0; i < len(Pacientes); i++ {
+		if codP == Pacientes[i].Code {
+			trueP = true
+		}
+	}
+	if trueP == true && trueM == true {
+		return true
+	}
+
+	// log.Println(trueM, trueP)
+	// log.Println(Medicos)
+	// log.Println(Pacientes)
+	return false
+
 }

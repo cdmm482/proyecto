@@ -28,13 +28,18 @@ var Pacientes []estructura.Patient
 // Historia cadena de bloques del historial medico general
 var Historia []estructura.History
 
+var Usuarios []estructura.Userg
+
 // MsgUser estructura que obtiene valores de datos en un POST de un medico y/o medico
 type MsgUser struct {
-	Code      string
 	FirstName string
 	LastName  string
 	CI        string
 	Age       int
+}
+type messageMedUser struct {
+	Code string
+	CI   string
 }
 
 // MsgHis estructura que obtiene valores de datos en un POST de un historial
@@ -66,7 +71,7 @@ func NewRoute() {
 		// spew.Dump(genesisBlock)
 
 		genPac := estructura.Patient{}
-		genPac = estructura.Patient{0, "123456789", UserDefault, controller.CalculateHashPac(genPac), "genesis"}
+		genPac = estructura.Patient{0, "12345679", UserDefault, controller.CalculateHashPac(genPac), "genesis"}
 
 		UserDefault.CI = "123321456CBB" // Para hacer controles de que un paciente no puede ser su propio medico
 
@@ -113,6 +118,9 @@ func makeMuxRouter() http.Handler {
 	// muxRouter.HandleFunc("/history", handleGetBlockchain).Methods("GET")
 	// muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
 
+	muxRouter.HandleFunc("/user", handleWriteUser).Methods("POST")
+	muxRouter.HandleFunc("/user", handleGetUser).Methods("GET")
+
 	muxRouter.HandleFunc("/medic", handleWriteMedic).Methods("POST")
 	muxRouter.HandleFunc("/medic", handleGetMedics).Methods("GET")
 
@@ -129,7 +137,7 @@ func makeMuxRouter() http.Handler {
 // POSTS  - -- - - - -- - - - - - - -  - - - - - -  - - - -  - -
 func handleWriteMedic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var msg MsgUser
+	var msg messageMedUser
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&msg); err != nil {
@@ -140,7 +148,7 @@ func handleWriteMedic(w http.ResponseWriter, r *http.Request) {
 
 	mutex.Lock()
 	prevBlock := Medicos[len(Medicos)-1]
-	newBlock := blockmedic.GenerateBlockmedic(prevBlock, msg.Code, msg.FirstName, msg.LastName, msg.CI, msg.Age)
+	newBlock := blockmedic.GenerateBlockmedic(prevBlock, msg.Code, msg.CI, Usuarios)
 	if controller.IsMedicValid(newBlock, prevBlock) {
 		Medicos = append(Medicos, newBlock)
 		spew.Dump(Medicos)
@@ -152,7 +160,7 @@ func handleWriteMedic(w http.ResponseWriter, r *http.Request) {
 }
 func handleWritePat(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
-	var msg MsgUser
+	var msg messageMedUser
 
 	decoder := json.NewDecoder(r.Body)
 	if err := decoder.Decode(&msg); err != nil {
@@ -163,7 +171,7 @@ func handleWritePat(w http.ResponseWriter, r *http.Request) {
 
 	mutex.Lock()
 	prevBlock := Pacientes[len(Pacientes)-1]
-	newBlock := blockpatient.GenerateBlockPatient(prevBlock, msg.Code, msg.FirstName, msg.LastName, msg.CI, msg.Age)
+	newBlock := blockpatient.GenerateBlockPatient(prevBlock, msg.Code, msg.CI, Usuarios)
 	if controller.IsPatientValid(newBlock, prevBlock) {
 		Pacientes = append(Pacientes, newBlock)
 		spew.Dump(Pacientes)
@@ -187,9 +195,31 @@ func handleWriteHisto(w http.ResponseWriter, r *http.Request) { //
 	mutex.Lock()
 	prevBlock := Historia[len(Historia)-1]
 	newBlock := blockhisto.GenerateBlockHisto(prevBlock, msg.CodeMed, msg.CodePat, Medicos, Pacientes)
-	if controller.IsHistoryValid(newBlock, prevBlock) {
+	if controller.IsHistoryValid(newBlock, prevBlock) && controller.ExistsGuys(Pacientes, Medicos, msg.CodePat, msg.CodeMed) {
 		Historia = append(Historia, newBlock)
 		spew.Dump(Historia)
+	}
+	mutex.Unlock()
+
+	respondWithJSON(w, r, http.StatusCreated, newBlock)
+
+}
+func handleWriteUser(w http.ResponseWriter, r *http.Request) { //
+	w.Header().Set("Content-Type", "application/json")
+	var msg MsgUser
+
+	decoder := json.NewDecoder(r.Body)
+	if err := decoder.Decode(&msg); err != nil {
+		respondWithJSON(w, r, http.StatusBadRequest, r.Body)
+		return
+	}
+	defer r.Body.Close()
+
+	mutex.Lock()
+	newBlock := estructura.Userg{msg.FirstName, msg.LastName, msg.CI, msg.Age}
+	if controller.NotExistsCI(Usuarios, msg.CI) {
+		Usuarios = append(Usuarios, newBlock)
+		spew.Dump(Usuarios)
 	}
 	mutex.Unlock()
 
@@ -218,6 +248,15 @@ func handleGetPatients(w http.ResponseWriter, r *http.Request) {
 
 func handleGetHistories(w http.ResponseWriter, r *http.Request) {
 	bytes, err := json.MarshalIndent(Historia, "", "  ")
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+		return
+	}
+	io.WriteString(w, string(bytes))
+}
+
+func handleGetUser(w http.ResponseWriter, r *http.Request) {
+	bytes, err := json.MarshalIndent(Usuarios, "", "  ")
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 		return

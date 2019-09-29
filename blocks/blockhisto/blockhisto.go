@@ -12,6 +12,7 @@ func GenerateBlockHisto(histoLast estructura.History, codeMed string, codePat st
 	t := time.Now()
 	nwBl.Index = histoLast.Index + 1
 	findP, findM := controller.FindUser(codePat, codeMed, Medicos, Pacientes)
+
 	nwBl.Medi = findM
 	nwBl.Patien = findP
 	nwBl.QueryAt = t
