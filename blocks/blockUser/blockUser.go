@@ -1,10 +1,9 @@
-package blockUser
+package blockuser
 
 import (
 	"proyecto/estructura"
 )
-
-// GenerateBlockPatient genera un bloque del tipo Patient
+// GenerateBlockUser genera un bloque del tipo usuario. Todavia en desuso
 func GenerateBlockUser(userLast estructura.Userg, Name string, LastN string, ci string, age int) estructura.Userg {
 	var newBlock estructura.Userg
 	newBlock.FirstName = Name

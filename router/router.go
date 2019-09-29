@@ -28,6 +28,7 @@ var Pacientes []estructura.Patient
 // Historia cadena de bloques del historial medico general
 var Historia []estructura.History
 
+// Usuarios es un array de usuarios sin cadena de bloques
 var Usuarios []estructura.Userg
 
 // MsgUser estructura que obtiene valores de datos en un POST de un medico y/o medico
