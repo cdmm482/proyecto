@@ -12,6 +12,7 @@ import (
 	"proyecto/controller"
 	"proyecto/estructura"
 	"sync"
+	"text/template"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -30,6 +31,10 @@ var Historia []estructura.History
 
 // Usuarios es un array de usuarios sin cadena de bloques
 var Usuarios []estructura.Userg
+
+type Page struct {
+	Title string
+}
 
 // MsgUser estructura que obtiene valores de datos en un POST de un medico y/o medico
 type MsgUser struct {
@@ -119,6 +124,8 @@ func makeMuxRouter() http.Handler {
 	// muxRouter.HandleFunc("/history", handleGetBlockchain).Methods("GET")
 	// muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
 
+	muxRouter.HandleFunc("/home", (homeHandler))
+
 	muxRouter.HandleFunc("/user", handleWriteUser).Methods("POST")
 	muxRouter.HandleFunc("/user", handleGetUser).Methods("GET")
 
@@ -136,6 +143,13 @@ func makeMuxRouter() http.Handler {
 }
 
 // POSTS  - -- - - - -- - - - - - - -  - - - - - -  - - - -  - -
+func homeHandler(w http.ResponseWriter, r *http.Request) {
+	p := Page{Title: "Historial Médico"}
+	log.Println("qwertt")
+	t, _ := template.ParseFiles("proyecto/HistorialMedico/Emergencia.html")
+	t.Execute(w, p)
+}
+
 func handleWriteMedic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var msg messageMedUser
