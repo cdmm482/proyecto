@@ -12,7 +12,6 @@ import (
 	"proyecto/controller"
 	"proyecto/estructura"
 	"sync"
-	"text/template"
 	"time"
 
 	"github.com/davecgh/go-spew/spew"
@@ -113,6 +112,7 @@ func run() error {
 		WriteTimeout:   10 * time.Second,
 		MaxHeaderBytes: 1 << 20,
 	}
+	http.Handle("/", mux)
 	err := s.ListenAndServe()
 	return err
 }
@@ -124,8 +124,13 @@ func makeMuxRouter() http.Handler {
 	// muxRouter.HandleFunc("/history", handleGetBlockchain).Methods("GET")
 	// muxRouter.HandleFunc("/", handleWriteBlock).Methods("POST")
 
-	muxRouter.HandleFunc("/home", (homeHandler))
-
+	// muxRouter.HandleFunc("/", homeHandler)
+	muxRouter.PathPrefix("/css/").Handler(http.StripPrefix("/css/", http.FileServer(http.Dir("./css/"))))
+	muxRouter.PathPrefix("/Images/").Handler(http.StripPrefix("/Images/", http.FileServer(http.Dir("./HistorialMedico/Images/"))))
+	// muxRouter.Handle("/", muxRouter.FileServer(muxRouter.Dir("sample.html")))
+	// cssHandler := http.FileServer(http.Dir("./css/"))
+	// http.Handle("/css/", http.StripPrefix("/css/", cssHandler))
+	muxRouter.HandleFunc("/", homeHandler)
 	muxRouter.HandleFunc("/user", handleWriteUser).Methods("POST")
 	muxRouter.HandleFunc("/user", handleGetUser).Methods("GET")
 
@@ -144,12 +149,34 @@ func makeMuxRouter() http.Handler {
 
 // POSTS  - -- - - - -- - - - - - - -  - - - - - -  - - - -  - -
 func homeHandler(w http.ResponseWriter, r *http.Request) {
-	p := Page{Title: "Historial Médico"}
-	log.Println("qwertt")
-	t, _ := template.ParseFiles("proyecto/HistorialMedico/Emergencia.html")
-	t.Execute(w, p)
+	// p := Page{Title: "Historial Médico"}
+	// log.Println("qwertt")
+	// t, _ := template.ParseFiles("./HistorialMedico/index.html")
+	// // t, _ := template.ParseFiles("sample.html")
+	// // push(w, "./HistorialMedico/")
+	// // push(w, "./HistorialMedico/css/custom.css")
+	// log.Println(push(w, "./css/estilos.css"))
+	// log.Println(push(w, "proyecto/css/bootstrap.css"))
+	// w.Header().Set("Content-Type", "text/html; charset=utf-8")
+
+	// // push(w, "./HistorialMedico/images/cr.png")
+	// // push(w, "./HistorialMedico/images/Historial.png")
+	// // push(w, "./HistorialMedico/imag/")
+	// // push(w, "./HistorialMedico/")
+	// t.Execute(w, p)
+	http.ServeFile(w, r, "./HistorialMedico/index.html")
 }
 
+// Push the given resource to the client.
+func push(w http.ResponseWriter, resource string) bool {
+	pusher, ok := w.(http.Pusher)
+	if ok {
+		if err := pusher.Push(resource, nil); err == nil {
+			return true
+		}
+	}
+	return ok
+}
 func handleWriteMedic(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Content-Type", "application/json")
 	var msg messageMedUser

@@ -1,12 +1,12 @@
 package main
 
 import (
-	"proyecto/fbconection"
+	// "proyecto/fbconection"
 	"proyecto/router"
 )
 
 func main() {
-	go fbconection.UpDate()
+	// go fbconection.UpDate()
 	router.NewRoute()
 
 }
