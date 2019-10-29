@@ -1,86 +1,84 @@
-<!DOCTYPE html>
-<html lang="no-js">
+<html>
 
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport"
-    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-  <title>Historial Médico</title>
-  <link rel="stylesheet" href="css/bootstrap.min.css">
-  <link rel="stylesheet" href="css/estilos.css">
-
+  <title>Firebase Login</title>
+  <link href="https://fonts.googleapis.com/css?family=Nunito:400,600,700" rel="stylesheet">
+  <link rel="stylesheet" href="style.css" />
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" href="https://time2hack.com/favicon.png" type="image/png">
+  <link rel="icon" href="https://time2hack.com/favicon.png" type="image/png">
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+    integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
 </head>
 
 <body>
 
+
+
+
+
   <div class="container">
     <div class="row">
       <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-        <img class="center-block" src="Images\Historial.png">
+        <center>
+          <img class="center-block" src="img/Historial.png">
+        </center>
         <div class="card card-login my-5">
           <div class="card-body">
-            <h5 class="card-title text-center">Login</h5>
-            <form class="form-login" method="POST">
-              <div class="form-label-group">
-                <input type="text" name="user" id="inputuser" class="form-control" placeholder="Usuario" required
-                  autofocus>
-                <label for="inputuser">Usuario</label>
-              </div>
-
-              <div class="form-label-group">
-                <input type="password" name="pass" id="inputPassword" class="form-control" placeholder="Password"
-                  required>
-                <label for="inputPassword">Contraseña</label>
-              </div>
-
-              <div class="custom-control custom-checkbox mb-3">
-                <input type="checkbox" class="custom-control-input" id="customCheck1">
-                <label class="custom-control-label" for="customCheck1">Recordar contraseña</label>
-              </div>
-              <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Entrar</button>
+            <h5 class="card-title text-center">Inicio de Sesion</h5>
 
 
-            </form>
+            <div id="login_div" class="form-label-group">
+
+              <label for="email_field">Usuario:</label>
+              <input type="text" placeholder="Usuario" id="email_field" class="form-control" />
+
+              <label for="password_field">Contraseña:</label>
+              <input type="password" placeholder="Password..." id="password_field" class="form-control"
+                placeholder="Password" /><br>
+                
+              <button onclick="login()">Inicio de sesion</button>
+
+            </div>
+
+            <div id="user_div" class="form-label-group">
+              <h3>Bienvenido Usuario:</h3>
+              <p id="user_para"></p>
+
+              <button onclick="window.location = 'menu.html';"> Continuar</button>
+
+              <button onclick="logout()">Salir</button>
+            </div>
+
+
           </div>
+
         </div>
+
       </div>
+
     </div>
+
   </div>
+
+  <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
   <script>
-    $('#form-login').on('submit', function (e) {
-
-      // e.preventDefault();
-      // $('#loginModal').modal('hide');
-      // $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
-      // $('#messageModal').modal('show');
-
-      // if ($('#loginEmail').val() != '' && $('#loginPassword').val() != '') {
-
-      //   //login the user
-      //   var data = {
-      //     email: $('#loginEmail').val() + "@fulano.com",
-      //     password: $('#loginPassword').val()
-      //   };
-
-      //   firebase.auth().signInWithEmailAndPassword(data.email, data.password).then(function (authData) {
-      //     auth = authData;
-          window.location = "index2.html";
-    //       $('#messageModalLabel').html(spanText((data.email), ['danger']))
-    //       // $('#messageModal').modal('hide');
-    //     })
-    //       .catch(function (error) {
-    //         console.log("Login Failed!", error);
-    //         // $('#messageModalLabel').html(spanText('Datos incorrectos'))
-    //         $('#messageModalLabel').html(spanText('ERROR1: ' + error.code, ['danger']))
-    //       });
-    //   }
-    // });
-    // $('#logout').on('click', function (e) {
-    //   e.preventDefault();
-    //   $('#messageModalLabel').html(spanText('Fulano', ['danger']))
-    //   firebase.auth().signOut()
-    });
+    // Initialize Firebase
+    var firebaseConfig = {
+      apiKey: "AIzaSyADzH0A_V_rBPtLzt0-ibqJPJOxjqmw514",
+      authDomain: "sis22019.firebaseapp.com",
+      databaseURL: "https://sis22019.firebaseio.com",
+      projectId: "sis22019",
+      storageBucket: "sis22019.appspot.com",
+      messagingSenderId: "652240941407",
+      appId: "1:652240941407:web:8a924537d8be9af0a7c6ea",
+      measurementId: "G-RZXJ3ZLDQZ"
+    };
+    firebase.initializeApp(firebaseConfig);
   </script>
+  <script src="index.js"></script>
+
 </body>
 
 </html>
