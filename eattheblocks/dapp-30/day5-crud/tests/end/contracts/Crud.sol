@@ -1,40 +1,31 @@
 pragma solidity ^0.5.0;
-
+pragma experimental ABIEncoderV2;
 contract Crud {
   struct User {
-    uint id;
-    string name;
+    string codmedico;
+    string codpaciente;
+    string registro;
+    string imagen;
   }
   User[] public users;
-  uint public nextId = 1;
-
-  function create(string memory name) public {
-    users.push(User(nextId, name));
-    nextId++;
+User[] public aux;
+  function create(string memory codmedico, string memory codpaciente, string memory registro, string memory imagen) public {
+    users.push(User(codmedico,codpaciente,registro,imagen));
   }
 
-  function read(uint id) view public returns(uint, string memory) {
-    uint i = find(id);
-    return(users[i].id, users[i].name);
-  }
-
-  function update(uint id, string memory name) public {
-    uint i = find(id);
-    users[i].name = name;
-  }
-
-  function destroy(uint id) public {
-    uint i = find(id);
-    delete users[i];
-  }
-
-  function find(uint id) view internal returns(uint) {
-    for(uint i = 0; i < users.length; i++) {
-      if(users[i].id == id) {
-        return i;
+  function read(string memory codpaciente) public returns(User[] memory) {
+      delete aux;
+          for(uint i = 0; i < users.length; i++) {
+      if(compareStrings(users[i].codpaciente,codpaciente)) {
+        aux.push(users[i]);
       }
     }
-    revert('User does not exist!');
+    return(aux);
   }
 
+    function compareStrings (string memory a, string memory b) public view 
+       returns (bool) {
+  return (keccak256(abi.encodePacked((a))) == keccak256(abi.encodePacked((b))) );
+
+       }
 }
