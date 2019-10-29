@@ -1,30 +1,35 @@
 <!DOCTYPE html>
 <html lang="no-js">
+
 <head>
-	<meta charset="UTF-8">
-	<meta name="viewport" content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
-	<title>Historial Médico</title>
-	<link rel="stylesheet" href="css/bootstrap.min.css">
-	<link rel="stylesheet" href="css/estilos.css">
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <title>Historial Médico</title>
+  <link rel="stylesheet" href="css/bootstrap.min.css">
+  <link rel="stylesheet" href="css/estilos.css">
 
 </head>
+
 <body>
-	
+
   <div class="container">
     <div class="row">
       <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
-        <img  class="center-block" src="Images\Historial.png">
+        <img class="center-block" src="Images\Historial.png">
         <div class="card card-login my-5">
           <div class="card-body">
             <h5 class="card-title text-center">Login</h5>
-            <form class="form-login" action="login.php" method="POST">
+            <form class="form-login" method="POST">
               <div class="form-label-group">
-                <input type="text" name="user" id="inputuser" class="form-control" placeholder="Usuario" required autofocus>
+                <input type="text" name="user" id="inputuser" class="form-control" placeholder="Usuario" required
+                  autofocus>
                 <label for="inputuser">Usuario</label>
               </div>
 
               <div class="form-label-group">
-                <input type="password"name="pass"id="inputPassword" class="form-control" placeholder="Password" required>
+                <input type="password" name="pass" id="inputPassword" class="form-control" placeholder="Password"
+                  required>
                 <label for="inputPassword">Contraseña</label>
               </div>
 
@@ -33,7 +38,7 @@
                 <label class="custom-control-label" for="customCheck1">Recordar contraseña</label>
               </div>
               <button class="btn btn-lg btn-primary btn-block text-uppercase" type="submit">Entrar</button>
-              
+
 
             </form>
           </div>
@@ -41,5 +46,41 @@
       </div>
     </div>
   </div>
+  <script>
+    $('#form-login').on('submit', function (e) {
+
+      // e.preventDefault();
+      // $('#loginModal').modal('hide');
+      // $('#messageModalLabel').html(spanText('<i class="fa fa-cog fa-spin"></i>', ['center', 'info']));
+      // $('#messageModal').modal('show');
+
+      // if ($('#loginEmail').val() != '' && $('#loginPassword').val() != '') {
+
+      //   //login the user
+      //   var data = {
+      //     email: $('#loginEmail').val() + "@fulano.com",
+      //     password: $('#loginPassword').val()
+      //   };
+
+      //   firebase.auth().signInWithEmailAndPassword(data.email, data.password).then(function (authData) {
+      //     auth = authData;
+          window.location = "index2.html";
+    //       $('#messageModalLabel').html(spanText((data.email), ['danger']))
+    //       // $('#messageModal').modal('hide');
+    //     })
+    //       .catch(function (error) {
+    //         console.log("Login Failed!", error);
+    //         // $('#messageModalLabel').html(spanText('Datos incorrectos'))
+    //         $('#messageModalLabel').html(spanText('ERROR1: ' + error.code, ['danger']))
+    //       });
+    //   }
+    // });
+    // $('#logout').on('click', function (e) {
+    //   e.preventDefault();
+    //   $('#messageModalLabel').html(spanText('Fulano', ['danger']))
+    //   firebase.auth().signOut()
+    });
+  </script>
 </body>
+
 </html>
