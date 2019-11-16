@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport"
+    content="width=device-width, user-scalable=no, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0">
+  <title>Historial Médico</title>
+
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.1.1/css/bootstrap.min.css"
+    integrity="sha384-WskhaSGFgHYWDcbwN70/dfYBj47jz9qbsMId/iRN3ewGhXQFZCSftd1LZCfmhktB" crossorigin="anonymous">
+  <link rel="stylesheet" href="//maxcdn.bootstrapcdn.com/font-awesome/4.3.0/css/font-awesome.min.css">
+  <link rel="stylesheet" href="css/estilos.css">
+
+</head>
+
+<body>
+
+  <div class="container">
+    <div class="row">
+      <div class="col-sm-9 col-md-7 col-lg-5 mx-auto">
+        <h2 class="text-danger text-center">Emergencias</h2>
+        <img class="rounded mx-auto d-block" style="max-width: 50%;" src="img/cr.png">
+        <div class="card card-login my-5">
+          <div class="card-body">
+            <h5 class="card-title text-center">Login</h5>
+            <!-- <form class="form-login" action="login.php" method="post"> -->
+
+            <div class="form-label-group">
+              <input type="text" name="user" id="inputuser" class="form-control" placeholder="Usuario" required
+                autofocus>
+              <label for="inputuser">Usuario</label>
+            </div>
+
+            <div class="form-label-group">
+              <input type="password" name="pass" id="inputPassword" class="form-control" placeholder="Password"
+                required>
+              <label for="inputPassword">Contraseña</label>
+            </div>
+
+            <!-- <div class="custom-control custom-checkbox mb-3">
+                <input type="checkbox" class="custom-control-input" id="customCheck1">
+                <label class="custom-control-label" for="customCheck1">Recordar contraseña</label>
+              </div> -->
+
+            <button class="btn btn-lg btn-primary btn-block text-uppercase" onclick="writeNew()">Entrar</button>
+
+            <!-- </form> -->
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+  <script>
+    // Initialize Firebase
+
+
+  </script>
+  <script>
+    function write() {
+      var firebaseConfig = {
+        apiKey: "AIzaSyADzH0A_V_rBPtLzt0-ibqJPJOxjqmw514",
+        authDomain: "sis22019.firebaseapp.com",
+        databaseURL: "https://sis22019.firebaseio.com",
+        projectId: "sis22019",
+        storageBucket: "sis22019.appspot.com",
+        messagingSenderId: "652240941407",
+        appId: "1:652240941407:web:8a924537d8be9af0a7c6ea",
+        measurementId: "G-RZXJ3ZLDQZ"
+      };
+      firebase.initializeApp(firebaseConfig);
+      var userId = 2123;
+      var name = "Fulano";
+      var email = "cosme2@fulano.com";
+      firebase.database().ref('userse/' + userId).set({
+        username: name,
+        email: email,
+      });
+    }
+
+    function writeNew(uid, username, picture, title, body) {
+      // A post entry.
+      var firebaseConfig = {
+        apiKey: "AIzaSyADzH0A_V_rBPtLzt0-ibqJPJOxjqmw514",
+        authDomain: "sis22019.firebaseapp.com",
+        databaseURL: "https://sis22019.firebaseio.com",
+        projectId: "sis22019",
+        storageBucket: "sis22019.appspot.com",
+        messagingSenderId: "652240941407",
+        appId: "1:652240941407:web:8a924537d8be9af0a7c6ea",
+        measurementId: "G-RZXJ3ZLDQZ"
+      };
+      firebase.initializeApp(firebaseConfig);
+      var postData = {
+        author: "FUlanoeditado",
+        uid: "sads",
+        body: "body",
+        title: "title",
+        starCount: 0,
+        authorPic: "picture"
+      };
+
+      // Get a key for a new Post.
+      var newPostKey = firebase.database().ref().child('posts').push().key;
+
+      // Write the new post's data simultaneously in the posts list and the user's post list.
+      var updates = {};
+      updates['/posts/' + "2142"] = postData;
+      // updates['/user-posts/' + uid + '/' + newPostKey] = postData;
+
+      return firebase.database().ref().update(updates);
+    }
+  </script>
+
+</body>
+
+</html>
