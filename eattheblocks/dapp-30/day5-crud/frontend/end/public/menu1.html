@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
+<!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
+<!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
+<!--[if gt IE 8]><!-->
+<html class="no-js">
+<!--<![endif]-->
+
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" href="">
+</head>
+
+<body onload="rev()">
+
+    <div id="user_div" class="form-label-group">
+        <h3> Usuario:</h3>
+        <p id="user_para"></p>
+
+        <button onclick="window.location = 'menu.html';"> Continuar</button>
+
+        <button onclick="logout()">Salir</button>
+    </div>
+
+    <script src="" async defer></script>
+
+    <script src="https://www.gstatic.com/firebasejs/4.8.1/firebase.js"></script>
+    <script>
+        // Initialize Firebase
+        var firebaseConfig = {
+            apiKey: "AIzaSyADzH0A_V_rBPtLzt0-ibqJPJOxjqmw514",
+            authDomain: "sis22019.firebaseapp.com",
+            databaseURL: "https://sis22019.firebaseio.com",
+            projectId: "sis22019",
+            storageBucket: "sis22019.appspot.com",
+            messagingSenderId: "652240941407",
+            appId: "1:652240941407:web:8a924537d8be9af0a7c6ea",
+            measurementId: "G-RZXJ3ZLDQZ"
+        };
+        firebase.initializeApp(firebaseConfig);
+    </script>
+    <script>
+        function rev() {
+            firebase.auth().onAuthStateChanged(function (user) {
+                if (user) {
+                    // User is signed in.
+                    var user = firebase.auth().currentUser;
+
+                    if (user != null) {
+
+                        var email_id = user.email;
+                        document.getElementById("user_para").innerHTML = "Welcome User : " + email_id;
+                    }
+
+                } else {
+                    // No user is signed in.
+                    window.location = "index.html";
+                    document.getElementById("user_div").style.display = "none";
+                    document.getElementById("login_div").style.display = "block";
+
+                }
+            });
+        }
+        function logout() {
+            firebase.auth().signOut();
+        }
+    </script>
+</body>
+
+</html>

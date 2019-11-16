@@ -44,11 +44,13 @@ const initApp = () => {
   const $read = document.getElementById('read');
   const $readResult = document.getElementById('read-result');
   let accounts = [];
-  var $a=1;
-
-  if($a==1){
+  var $a=12;
+  if($a==12){
   	document.getElementById('create').style.display ="none";
+  }else{
+    document.getElementById('read').style.display ="none";
   }
+
 
 
   web3.eth.getAccounts()
@@ -57,47 +59,26 @@ const initApp = () => {
   });
 
   $create.addEventListener('submit', (e) => {
-  	// function crear1(){
     e.preventDefault();
     const name = e.target.elements[0].value;
-
-
-    var db = firebase.database();
-  var $id1="";
-      
-    var leadsRef = db.ref('camino');
-    leadsRef.on('value', function (snapshot) {
-        snapshot.forEach(function (childSnapshot) {
-            var da = childSnapshot.val();
-              $id1 += da.ci;
-              crud.methods.create("m1",da.ci,name,"imagenlol").send({from: accounts[0]})
+    crud.methods.create("m1","p1",name,"imagenlol").send({from: accounts[0]})
     .then(result => {
       $createResult.innerHTML = `Registro añadido satisfactoriamente!`;
     })
     .catch(_e => {
       $createResult.innerHTML = `Error! No se añadió el registro`;
     });
-    // }
   });
-              
-
-        });
-    });
-    
 
   $read.addEventListener('submit', (e) => {
-  	// function leaseporfavor(){
-   e.preventDefault();
-  	
-
-
- 
-   const id = e.target.elements[0].value;
-
-   // alert(id1+"hola");
-    
-    crud.methods.read(id).call().then(result => {
-      
+    e.preventDefault();
+    const id = e.target.elements[0].value;
+    crud.methods.read(id).call()
+    .then(result => {
+      //for (var i=0;i<result.length;i++) {
+     //   $readResult.innerHTML += `${result[i]}`;
+     // }
+      //$readResult.innerHTML = `${result[0]}`;
       var html = "<table border='5' width='100%'><col style='width:10%'><col style='width:10%'> <col style='width:40%'><col style='width:40%'>";
       html+="<thead> <tr>";
     html+="<td style='text-align:center'>"+"Código de Médico"+"</td>";
@@ -116,11 +97,11 @@ for (var i = 0; i < result.length; i++) {
 html+="</tbody></table>";
 //document.getElementById("box").innerHTML = html;
 $readResult.innerHTML = `${html}`;
-    }).catch(_e => {
+    })
+    .catch(_e => {
       $readResult.innerHTML = `Error! No se pudo leer el historial`;
     });
-    // }
-  });  //  
+  });
 
 };
 
@@ -133,4 +114,3 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(e => console.log(e.message));
 });
-
